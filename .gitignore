@@ -86,6 +86,7 @@ element_switching/**
 !element_switching/graphite/
 !element_switching/liquid/
 !element_switching/model/
+!element_switching/cn_switching_image/
 
 element_switching/graphite/**
 !element_switching/graphite/*.py
@@ -101,6 +102,11 @@ element_switching/model/**
 !element_switching/model/params.txt
 
 element_switching/data/
+
+element_switching/cn_switching_image/**
+!element_switching/cn_switching_image/*.py
+!element_switching/cn_switching_image/*.png
+!element_switching/cn_switching_image/README.md
 
 # ── Simulation / fingerprint artifacts (global) ───────────────────────────────
 **/frame_*/
@@ -145,6 +151,7 @@ hea_study/chimes_model/model.*
 run_*.log
 *.png
 !hea_study/latent_space_visuals_expanded/*.png
+!element_switching/cn_switching_image/*.png
 *-fingerprints_combined.csv
 
 # Backup files from reorganization

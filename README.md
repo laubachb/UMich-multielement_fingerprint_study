@@ -56,6 +56,7 @@ multielement_study/
 ├── data/                    repo-root archives + layout docs
 ├── scripts/                 reorganize / cleanup helpers
 ├── element_switching/       CN element-switching validation (graphite + liquid)
+│   ├── cn_switching_image/  element-switching figure + script (tracked)
 │   └── data/                local outputs (gitignored)
 ├── models/
 │   ├── workflows/           tracked scripts (fingerprint + full_model)
@@ -110,7 +111,25 @@ fingerprints/
 ```
 
 **Tracked in git:** `graphite/*.py`, `graphite/*.sh`, `graphite/in.lammps`,
-`liquid/*.py`, `liquid/*.sh`, `liquid/in.lammps`, `model/params.txt`.
+`liquid/*.py`, `liquid/*.sh`, `liquid/in.lammps`, `model/params.txt`,
+`cn_switching_image/` (figure + script).
+
+### `cn_switching_image/` (tracked script + figure)
+
+Publication-style stacked fingerprint plot for graphite C→N substitution (0–100% N)
+across α = 0–1.
+
+```bash
+cd element_switching/cn_switching_image
+python make_cn_switching_figure.py
+```
+
+| Tracked | Description |
+|---------|-------------|
+| `make_cn_switching_figure.py` | Generation script |
+| `cn_switching_fingerprints.png` | Output figure |
+
+Fingerprint data: `element_switching/data/graphite/fingerprints/` (gitignored).
 
 ---
 
