@@ -1,65 +1,278 @@
-# Multielement ChIMES study
+# Element-Aware Cluster-Graph Fingerprints for Multi-Element ChIMES
 
-Workflows for carbon–nitrogen (CN) and high-entropy alloy (HEA) ChIMES fingerprint
-generation, UMAP analysis, farthest-point sampling, and model fitting.
+Computational workflows supporting development and validation of **element-aware
+cluster-graph fingerprints** for machine-learned interatomic potential (MLIP)
+development with [ChIMES](https://github.com/LindseyLab-umich/chimes_calculator-LLfork).
 
-**This repository tracks scripts only.** Large simulation outputs (fingerprints,
-trajectories, fitted models) live at the paths in [`data/README.md`](data/README.md)
-and are gitignored.
+This repository tracks **scripts and configuration only**. Large simulation outputs
+(fingerprints, trajectories, fitted models) remain on disk at the paths below and
+are gitignored.
+
+## Scientific context
+
+Multi-element systems—alloys, compounds, interfaces—require descriptors that capture
+both **local geometry** and **chemical composition**. Existing MLIP descriptors
+(SOAP, symmetry functions, GNN embeddings) typically embed composition implicitly
+within structural features, with no tunable control over how much structure versus
+composition drives configurational similarity.
+
+This study implements a **hybrid cluster dissimilarity metric** integrated with
+ChIMES fingerprinting:
+
+\[
+D_{\text{total}} = \alpha \, \tilde{D}_{\text{struct}} + (1 - \alpha) \, \tilde{D}_{\text{comp}}
+\]
+
+| α value | Interpretation |
+|---------|----------------|
+| **α = 0** | Pure **composition** dissimilarity (position-aware for 3b/4b clusters via centrality ranking; 1-Wasserstein for 2b) |
+| **α = 1** | Pure **structural** dissimilarity (Morse-transformed interatomic distances) |
+| **0 < α < 1** | Convex blend — tunable structure–composition tradeoff |
+
+Key design choices:
+
+- **Structural component:** sorted Morse-transformed edge lengths; Euclidean distance in normalized \([-1,1]\) space.
+- **Compositional component (2-body):** position-agnostic 1-Wasserstein distance on atomic descriptors.
+- **Compositional component (3-/4-body):** atoms ranked by geometric centrality (edge-sum); Euclidean distance on centrality-ordered element vectors — distinguishes e.g. B at the apex vs. base of an isosceles triangle at fixed stoichiometry.
+- **Fingerprints:** normalized pairwise distances binned into histograms (300 bins over 2b + 3b + 4b clusters per frame).
+
+The workflows here support two application areas from the associated manuscript:
+
+1. **Carbon–nitrogen (CN)** — element-switching validation and α-sweep latent-space
+   analysis across diverse thermodynamic state points.
+2. **High-entropy alloys (HEA)** — extension to multi-principal-element compositions
+   and ChIMES model fitting.
+
+Shared ChIMES parameters for CN fingerprinting:
+`element_switching/model/params.txt`.
+
+---
 
 ## Repository layout
 
 ```
 multielement_study/
-├── setup/                   environment + ChIMES install
+├── setup/                   environment variables + ChIMES install
 ├── data/                    repo-root archives + layout docs
 ├── scripts/                 reorganize / cleanup helpers
-├── element_switching/       CN params + graphite/liquid scripts (tracked)
+├── element_switching/       CN element-switching validation (graphite + liquid)
 │   └── data/                local outputs (gitignored)
 ├── models/
-│   ├── workflows/           ONLY tracked part of models/
-│   └── fingerprints/        a*_fingerprints/ data (gitignored)
+│   ├── workflows/           tracked scripts (fingerprint + full_model)
+│   └── fingerprints/        CN α-sweep data trees (gitignored)
 ├── hea_study/
-│   ├── alpha_*-histograms/  top-level *.sh / *.py only (tracked)
-│   ├── chimes_model/        fm_setup.in + run*.cmd only (tracked)
+│   ├── alpha_*-histograms/  HEA fingerprint workflows (scripts tracked)
+│   ├── chimes_model/        HEA fitting setup (fm_setup.in, run*.cmd tracked)
 │   └── data/                archives + frame outputs (gitignored)
 └── external/                cloned ChIMES forks (gitignored)
 ```
 
-Shared ChIMES parameters for CN: `element_switching/model/params.txt`.
+---
 
-Legacy `chimes_calculator-myLLfork/` and `chimes_lsq-LLfork/` may exist locally;
-they are gitignored. Fresh installs use `external/` via `setup/install_chimes.sh`.
+## `element_switching/` — CN element-switching validation
+
+**Purpose:** Demonstrate that the α parameter decouples structural and compositional
+contributions to cluster fingerprints. A fixed atomic configuration is held constant
+while C atoms are progressively replaced with N; fingerprint evolution is measured
+as α decreases from 1 (structure-only, invariant to element swaps) toward 0
+(composition-dominated).
+
+**Systems:**
+
+| Subdirectory | System | Conditions |
+|--------------|--------|------------|
+| `graphite/` | Crystalline graphite | 1500 K reference frame; ordered lattice scaffold |
+| `liquid/` | Disordered C–N liquid | 2000 K, 1.0 g/cc |
+
+**Workflow (per system):**
+
+1. `create_swap_and_alpha_dirs.py` — read a reference `.xyzf`, build substitution
+   series (0–100% N in increments), and create `alpha_000` … `alpha_100` subdirs.
+2. `xyzf2data.py` — convert structures to LAMMPS data files.
+3. `run_all_alphas.sh` — run LAMMPS equilibration and histogram generation at each
+   α value for each substitution percentage.
+4. `plot_histograms.py` — visualize fingerprint evolution along the C→N pathway.
+
+**Expected outputs** (gitignored under `element_switching/data/` or local
+`fingerprints/`):
+
+```
+fingerprints/
+  graphite_1500K_0262_*pct/     # one dir per N-substitution level
+    alpha_000/ … alpha_100/     # one dir per α value
+      *.hist                      # 300-bin cluster dissimilarity histogram
+      log.lammps, traj.lammpstrj  # LAMMPS outputs (if run)
+  *-fingerprints_combined.csv     # aggregated histogram data for plotting
+  test.png                        # fingerprint evolution figures
+```
+
+**Tracked in git:** `graphite/*.py`, `graphite/*.sh`, `graphite/in.lammps`,
+`liquid/*.py`, `liquid/*.sh`, `liquid/in.lammps`, `model/params.txt`.
+
+---
+
+## `models/` — CN fingerprint generation, analysis, and MLIP training
+
+**Purpose:** Generate full-frame cluster fingerprints for the CN training corpus
+across the α sweep; analyze latent-space degeneracy and frame displacement; build
+pruned training sets via farthest-point sampling (FPS); fit ChIMES models.
+
+### `models/fingerprints/` (data, gitignored)
+
+Per-α data trees holding ~300 MD/DFT frames each, spanning CN state points
+(temperature, density, composition):
+
+| Directory | α | Role |
+|-----------|---|------|
+| `a000_fingerprints/` | 0.00 | Pure composition |
+| `a025_fingerprints/` | 0.25 | |
+| `a050_fingerprints/` | 0.50 | |
+| `a075_fingerprints/` | 0.75 | |
+| `a100_fingerprints/` | 1.00 | Pure structure |
+
+**Per-frame structure:**
+
+```
+a025_fingerprints/
+  frame_0/
+    frame_0.hist          # 300-bin histogram (column 1 = combined 2b+3b+4b)
+    lammps.in, data.lammps
+  frame_1/
+  …
+```
+
+Frames valid across all five α values are used for cross-α UMAP analysis (~276
+frames after excluding incomplete/missing entries).
+
+### `models/workflows/` (tracked)
+
+| Subdirectory | Scripts | Purpose |
+|--------------|---------|---------|
+| `fingerprints/` | `gen_hists_a*.sh` | SLURM batch jobs to generate `*.hist` per frame |
+| `fingerprints/` | `gen_missing_hists_a025.sh` | Backfill incomplete α=0.25 frames |
+| `fingerprints/` | `clusters_*.sh`, `clusters_xyzf2data.py` | Cluster extraction from xyzf |
+| `fingerprints/umap/` | `analyze_alpha_umap.py`, `make_umap_degeneracy.py`, `umap_data.py` | UMAP / PCA / displacement analysis |
+| `full_model/` | `gen_Amat.sh`, `solve_Amat.sh`, `rotate_frames.py` | ChIMES LSQ matrix generation and fitting |
+
+**Run fingerprint generation** from the data directory:
+
+```bash
+source setup/env.sh
+cd models/fingerprints/a025_fingerprints
+sbatch ../workflows/fingerprints/gen_hists_a025.sh   # or symlink gen_hists.sh
+```
+
+**Run UMAP analysis:**
+
+```bash
+cd models/workflows/fingerprints/umap
+python analyze_alpha_umap.py
+python analyze_alpha_umap.py --recompute   # rebuild cache from *.hist files
+```
+
+**Expected analysis outputs** (gitignored under `umap/`):
+
+| Output | Description |
+|--------|-------------|
+| `umap/cache/` | Cached embeddings, distance matrices, manifest |
+| `umap/figures/aligned_umap_panels.png` | Procrustes-aligned UMAP panels (α = 0, 0.25, …, 1) |
+| `umap/figures/fingerprint_displacement_vs_alpha.png` | L2 distance in histogram space vs α |
+| `umap/figures/alpha_trajectories.png` | Per-frame paths through aligned latent space |
+| `umap/figures/pca_fingerprint_sweep.png` | PCA of stacked fingerprints colored by α |
+| `umap/figures/frame_metrics.csv` | Per-frame scalar metrics for FPS ranking |
+
+**MLIP training workflow** (`full_model/`): FPS selects diverse frames in descriptor
+space at α = 0.00 and α = 0.02 (and other α values as needed); pruned frame lists
+feed ChIMES LSQ fitting. Expected fitting outputs (`A.txt`, `b.txt`, `params.txt`
+revisions) live under `models/full_model/` (gitignored).
+
+---
+
+## `hea_study/` — high-entropy alloy fingerprints and model fitting
+
+**Purpose:** Extend element-aware fingerprinting to HEA compositions; generate
+per-frame histograms at multiple α values; fit a HEA ChIMES model from selected
+training frames.
+
+### `alpha_*-histograms/` (scripts tracked, frame data gitignored)
+
+Parallel workflow trees, one per α:
+
+| Directory | α |
+|-----------|---|
+| `alpha_0-histograms/` | 0.00 |
+| `alpha_025-histograms/` | 0.25 |
+| `alpha_050-histograms/` | 0.50 |
+| `alpha_075-histograms/` | 0.75 |
+| `alpha_1-histograms/` | 1.00 |
+
+**Typical pipeline** (top-level scripts in each α directory):
+
+1. `split_and_convert_xyzf.sh` / `convert_xyzf_to_data.sh` — prepare per-frame
+   LAMMPS inputs from `hea_chimes_format.xyzf`.
+2. `submit_lammps_jobs.sh` — run MD / cluster extraction.
+3. `gen_hist_all_frames.sh` — batch histogram generation with fixed α.
+4. `post_process_lammpsin_files.py` / `run_post_processclusters_each_directory.sh`
+   — post-process cluster files.
+
+**Expected outputs** (gitignored):
+
+```
+alpha_025-histograms/
+  frame_0/
+    frame_0.hist
+    lammps.in, data files, cluster outputs
+  frame_1/
+  …
+```
+
+### `chimes_model/` (partially tracked)
+
+HEA ChIMES least-squares fitting setup.
+
+| Tracked | Purpose |
+|---------|---------|
+| `fm_setup.in` | Fitting configuration (frames, basis, constraints) |
+| `run_chimeslsq.cmd`, `run_lsqpy.cmd` | Launch ChIMES LSQ on HPC |
+
+Fitting outputs (`A.txt`, `b.txt`, `restart.*.txt`, fitted `params.txt`) are
+gitignored. For CN studies, use `element_switching/model/params.txt`; the copy under
+`hea_study/chimes_model/params.txt` is a local fitting artifact.
+
+---
 
 ## Quick start
 
 ```bash
+# 1. Install ChIMES dependencies
 bash setup/install_chimes.sh
 source setup/env.sh
 
+# 2. CN fingerprint generation (example: α = 0.25)
 cd models/fingerprints/a025_fingerprints
-sbatch gen_hists.sh
+sbatch ../../workflows/fingerprints/gen_hists_a025.sh
 
-cd models/workflows/fingerprints/umap
+# 3. UMAP / α-sweep analysis
+cd ../../workflows/fingerprints/umap
 python analyze_alpha_umap.py
-```
 
-## One-time reorganization
-
-```bash
-bash scripts/reorganize_repo.sh
-```
-
-## Initialize git
-
-```bash
-git init
-git add README.md .gitignore setup/ data/ scripts/ element_switching/ models/ hea_study/
-git status
-git commit -m "Initial commit: multielement ChIMES workflows"
+# 4. Element-switching validation (graphite)
+cd element_switching/graphite
+python create_swap_and_alpha_dirs.py
+sbatch run_all_alphas.sh
 ```
 
 ## Dependencies
 
-- [chimes_calculator-LLfork](https://github.com/LindseyLab-umich/chimes_calculator-LLfork)
-- [chimes_lsq-LLfork](https://github.com/LindseyLab-umich/chimes_lsq-LLfork)
+- [chimes_calculator-LLfork](https://github.com/LindseyLab-umich/chimes_calculator-LLfork) — LAMMPS interface, histogram executable
+- [chimes_lsq-LLfork](https://github.com/LindseyLab-umich/chimes_lsq-LLfork) — ChIMES parameter fitting
+- Python: `numpy`, `pandas`, `matplotlib`, `scikit-learn`, `umap-learn`, `scipy`
+
+Install ChIMES into `external/` via `setup/install_chimes.sh`. Legacy local forks
+(`chimes_calculator-myLLfork/`, etc.) may exist on disk but are gitignored.
+
+## Citation
+
+If you use these workflows, please cite the associated work on element-aware
+cluster-graph fingerprints for multi-component MLIP development (Laubach et al.,
+*J. Chem. Theory Comput.*, in preparation).
