@@ -59,6 +59,8 @@ multielement_study/
 │   └── data/                local outputs (gitignored)
 ├── models/
 │   ├── workflows/           tracked scripts (fingerprint + full_model)
+│   ├── sampling/            FPS pruned-frame selection (tracked scripts)
+│   ├── pruned_models/       ChIMES fitting on FPS subsets (tracked scripts)
 │   └── fingerprints/        CN α-sweep data trees (gitignored)
 ├── hea_study/
 │   ├── alpha_*-histograms/  HEA fingerprint workflows (scripts tracked)
@@ -181,10 +183,30 @@ python analyze_alpha_umap.py --recompute   # rebuild cache from *.hist files
 | `umap/figures/pca_fingerprint_sweep.png` | PCA of stacked fingerprints colored by α |
 | `umap/figures/frame_metrics.csv` | Per-frame scalar metrics for FPS ranking |
 
-**MLIP training workflow** (`full_model/`): FPS selects diverse frames in descriptor
-space at α = 0.00 and α = 0.02 (and other α values as needed); pruned frame lists
-feed ChIMES LSQ fitting. Expected fitting outputs (`A.txt`, `b.txt`, `params.txt`
-revisions) live under `models/full_model/` (gitignored).
+**MLIP training workflow** (`full_model/`): full-corpus ChIMES fitting on all 298
+frames (gitignored outputs under `models/full_model/`).
+
+### `models/sampling/` (tracked scripts, gitignored results)
+
+FPS on CN fingerprint vectors at each α (1%, 10%, 50% retention, 3 replicates).
+
+```bash
+cd models/sampling && python run_fps_sampling.py
+```
+
+Outputs: `results/alpha_*/pct_*/replicate_*/selected_frames.txt`
+
+### `models/pruned_models/` (tracked scripts, gitignored runs)
+
+ChIMES LSQ fitting on each FPS subset (45 runs: 5 α × 3 retentions × 3 replicates).
+
+```bash
+cd models/pruned_models
+python prepare_runs.py    # extract training.xyzf + fm_setup.in per subset
+bash submit_all.sh        # submit gen_Amat → solve_Amat chains
+```
+
+Each run under `runs/a*_pct*_rep*/` produces `params.txt`, `A.txt`, `b.txt`, etc.
 
 ---
 
