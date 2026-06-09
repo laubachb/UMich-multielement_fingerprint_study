@@ -23,6 +23,10 @@ writing/
 # ══════════════════════════════════════════════════════════════════════════════
 models/*
 !models/workflows/
+!models/sampling/
+models/sampling/**
+!models/sampling/*.py
+!models/sampling/README.md
 models/fingerprints/
 models/full_model/
 models/gt_simulations/
