@@ -23,6 +23,19 @@ writing/
 # ══════════════════════════════════════════════════════════════════════════════
 models/*
 !models/workflows/
+!models/sampling/
+models/sampling/**
+!models/sampling/*.py
+!models/sampling/README.md
+!models/pruned_models/
+models/pruned_models/**
+!models/pruned_models/*.py
+!models/pruned_models/*.sh
+!models/pruned_models/README.md
+!models/pruned_models/templates/
+models/pruned_models/templates/**
+!models/pruned_models/templates/*
+models/pruned_models/runs/
 models/fingerprints/
 models/full_model/
 models/gt_simulations/
