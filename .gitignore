@@ -1,0 +1,143 @@
+# ── ChIMES dependencies (clone via setup/install_chimes.sh) ─────────────────
+external/
+chimes_calculator-myLLfork/
+chimes_calculator-LLfork/
+chimes_lsq-LLfork/
+chimes_lsq/
+
+# ── Archives & loose data at repo root ────────────────────────────────────────
+*.tar.gz
+*.zip
+*.xyzf
+__MACOSX/
+ALL_BASE_FILES/
+data/full_dft.xyzf
+data/archives/
+
+# ── Legacy / exploratory ───────────────────────────────────────────────────────
+old_models/
+writing/
+
+# ══════════════════════════════════════════════════════════════════════════════
+# models/  —  only models/workflows/ is tracked
+# ══════════════════════════════════════════════════════════════════════════════
+models/*
+!models/workflows/
+models/fingerprints/
+models/full_model/
+models/gt_simulations/
+models/pruned_simulations/
+models/training_set_splits/
+models/apr2026-fingerprints_backup/
+models/data/
+models/fingerprints/umap_visualizations/
+
+# ══════════════════════════════════════════════════════════════════════════════
+# hea_study/  —  alpha_* top-level scripts + chimes_model subset
+# ══════════════════════════════════════════════════════════════════════════════
+hea_study/**
+!hea_study/README.md
+!hea_study/alpha_0-histograms/
+!hea_study/alpha_025-histograms/
+!hea_study/alpha_050-histograms/
+!hea_study/alpha_075-histograms/
+!hea_study/alpha_1-histograms/
+!hea_study/chimes_model/
+
+hea_study/alpha_*-histograms/**
+!hea_study/alpha_*-histograms/*.sh
+!hea_study/alpha_*-histograms/*.py
+
+hea_study/chimes_model/**
+!hea_study/chimes_model/fm_setup.in
+!hea_study/chimes_model/run*.cmd
+
+hea_study/workflows/
+hea_study/data/
+hea_study/frame_clusters/
+hea_study/lmp_setup/
+hea_study/tar_files/
+hea_study/transfer_to_local-Apr2026/
+
+# ══════════════════════════════════════════════════════════════════════════════
+# element_switching/  —  scripts + model/params.txt only
+# ══════════════════════════════════════════════════════════════════════════════
+element_switching/**
+!element_switching/README.md
+!element_switching/graphite/
+!element_switching/liquid/
+!element_switching/model/
+
+element_switching/graphite/**
+!element_switching/graphite/*.py
+!element_switching/graphite/*.sh
+!element_switching/graphite/in.lammps
+
+element_switching/liquid/**
+!element_switching/liquid/*.py
+!element_switching/liquid/*.sh
+!element_switching/liquid/in.lammps
+
+element_switching/model/**
+!element_switching/model/params.txt
+
+element_switching/data/
+
+# ── Simulation / fingerprint artifacts (global) ───────────────────────────────
+**/frame_*/
+**/a*_fingerprints/
+**/debug-a*_fingerprints/
+*.hist
+*.lammpstrj
+**/traj.lammpstrj
+**/log.lammps
+**/stdoutmsg*
+**/output.txt
+**/out.lammps
+**/*.clusters.txt
+**/0.all-*-clusters.txt
+**/0.*_clusters.txt
+**/cluster_gen.log
+element_switching/**/fingerprints/
+
+# UMAP caches / figures
+**/umap/cache/
+**/umap/figures/
+**/umap/*.csv
+**/umap/*.png
+**/fingerprints_alpha*.csv
+
+# Model fitting outputs
+**/fm_setup.log
+**/frames.*.log
+**/A.txt
+**/Ax.txt
+**/b.txt
+**/b-labeled.txt
+**/dim.txt
+**/dlars.log
+**/erroutmsg
+**/force.txt
+hea_study/chimes_model/params.txt
+hea_study/chimes_model/model.*
+
+# Logs / plots / csv outputs
+*.log
+run_*.log
+*.png
+*-fingerprints_combined.csv
+
+# Backup files from reorganization
+*.bak
+
+# Python / OS
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.DS_Store
+*.swp
+*~
+
+# SLURM
+slurm-*.out
+slurm-*.err

@@ -1,0 +1,54 @@
+####### CONTROL VARIABLES #######
+
+# TRJFILE # 
+        hea_chimes_format_rotated.xyzf
+# WRAPTRJ # 
+        false
+# NFRAMES # 
+568
+# NLAYERS # 
+        1
+# FITCOUL # 
+        false
+# CNSCOUL # 
+        false   
+# FITSTRS #
+false 
+# FITENER # 
+        false   
+# FITPOVR # 
+        false
+# PAIRTYP # 
+        CHEBYSHEV 2 2 2 -1 1
+# CHBTYPE #
+        MORSE
+# SPLITFI #
+        false
+
+
+####### TOPOLOGY VARIABLES #######
+
+
+# NATMTYP # 
+        2
+
+# TYPEIDX #     # ATM_TYP #     # ATMCHRG #     # ATMMASS # 
+1               Y                0.0    88.906
+2               Mg               0.0    24.305 
+
+# PAIRIDX #     # ATM_TY1 #     # ATM_TY1 #     # S_MINIM #     # S_MAXIM #     # S_DELTA #     # MORSE_LAMBDA #      # USEOVRP #     # NIJBINS #     # NIKBINS #     # NJKBINS #  
+1              Y               Y               0.98            7               0.01            1.40                   false           0               0               0  
+2              Mg              Mg              1.86            7               0.01            1.09                   false           0               0               0  
+3              Y               Mg              1.90            7               0.01            1.39                   false           0               0               0  
+
+
+
+SPECIAL 3B S_MAXIM: ALL 6.0
+SPECIAL 4B S_MAXIM: ALL 5.0
+
+# FCUTTYP #
+TERSOFF 0.75
+
+# ENDFILE #
+
+ 
