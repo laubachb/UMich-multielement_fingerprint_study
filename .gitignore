@@ -56,6 +56,7 @@ hea_study/**
 !hea_study/alpha_075-histograms/
 !hea_study/alpha_1-histograms/
 !hea_study/chimes_model/
+!hea_study/latent_space_visuals_expanded/
 
 hea_study/alpha_*-histograms/**
 !hea_study/alpha_*-histograms/*.sh
@@ -71,6 +72,11 @@ hea_study/frame_clusters/
 hea_study/lmp_setup/
 hea_study/tar_files/
 hea_study/transfer_to_local-Apr2026/
+
+hea_study/latent_space_visuals_expanded/**
+!hea_study/latent_space_visuals_expanded/*.py
+!hea_study/latent_space_visuals_expanded/*.png
+!hea_study/latent_space_visuals_expanded/README.md
 
 # ══════════════════════════════════════════════════════════════════════════════
 # element_switching/  —  scripts + model/params.txt only
@@ -138,6 +144,7 @@ hea_study/chimes_model/model.*
 *.log
 run_*.log
 *.png
+!hea_study/latent_space_visuals_expanded/*.png
 *-fingerprints_combined.csv
 
 # Backup files from reorganization
