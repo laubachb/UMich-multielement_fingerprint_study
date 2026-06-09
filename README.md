@@ -56,6 +56,7 @@ multielement_study/
 ├── data/                    repo-root archives + layout docs
 ├── scripts/                 reorganize / cleanup helpers
 ├── element_switching/       CN element-switching validation (graphite + liquid)
+│   ├── cn_switching_image/  element-switching figure + script (tracked)
 │   └── data/                local outputs (gitignored)
 ├── models/
 │   ├── workflows/           tracked scripts (fingerprint + full_model)
@@ -65,6 +66,7 @@ multielement_study/
 ├── hea_study/
 │   ├── alpha_*-histograms/  HEA fingerprint workflows (scripts tracked)
 │   ├── chimes_model/        HEA fitting setup (fm_setup.in, run*.cmd tracked)
+│   ├── latent_space_visuals_expanded/  HEA UMAP figure + script (tracked)
 │   └── data/                archives + frame outputs (gitignored)
 └── external/                cloned ChIMES forks (gitignored)
 ```
@@ -109,7 +111,25 @@ fingerprints/
 ```
 
 **Tracked in git:** `graphite/*.py`, `graphite/*.sh`, `graphite/in.lammps`,
-`liquid/*.py`, `liquid/*.sh`, `liquid/in.lammps`, `model/params.txt`.
+`liquid/*.py`, `liquid/*.sh`, `liquid/in.lammps`, `model/params.txt`,
+`cn_switching_image/` (figure + script).
+
+### `cn_switching_image/` (tracked script + figure)
+
+Publication-style stacked fingerprint plot for graphite C→N substitution (0–100% N)
+across α = 0–1.
+
+```bash
+cd element_switching/cn_switching_image
+python make_cn_switching_figure.py
+```
+
+| Tracked | Description |
+|---------|-------------|
+| `make_cn_switching_figure.py` | Generation script |
+| `cn_switching_fingerprints.png` | Output figure |
+
+Fingerprint data: `element_switching/data/graphite/fingerprints/` (gitignored).
 
 ---
 
@@ -260,6 +280,24 @@ HEA ChIMES least-squares fitting setup.
 Fitting outputs (`A.txt`, `b.txt`, `restart.*.txt`, fitted `params.txt`) are
 gitignored. For CN studies, use `element_switching/model/params.txt`; the copy under
 `hea_study/chimes_model/params.txt` is a local fitting artifact.
+
+### `latent_space_visuals_expanded/` (tracked script + figure)
+
+2×5 UMAP degeneracy figure for the HEA α sweep (Y-only / Mg-only / Mixed composition
+in row 0; mixed-only with degeneracy annotations in row 1).
+
+```bash
+cd hea_study/latent_space_visuals_expanded
+python make_umap_degeneracy_expanded.py
+```
+
+| Tracked | Description |
+|---------|-------------|
+| `make_umap_degeneracy_expanded.py` | Generation script |
+| `umap_degeneracy_expanded.png` | Output figure |
+
+Histogram data: `transfer_to_local-Apr2026/` (gitignored). Composition labels:
+`alpha_0-histograms/` cluster files.
 
 ---
 

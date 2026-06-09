@@ -56,6 +56,7 @@ hea_study/**
 !hea_study/alpha_075-histograms/
 !hea_study/alpha_1-histograms/
 !hea_study/chimes_model/
+!hea_study/latent_space_visuals_expanded/
 
 hea_study/alpha_*-histograms/**
 !hea_study/alpha_*-histograms/*.sh
@@ -72,6 +73,11 @@ hea_study/lmp_setup/
 hea_study/tar_files/
 hea_study/transfer_to_local-Apr2026/
 
+hea_study/latent_space_visuals_expanded/**
+!hea_study/latent_space_visuals_expanded/*.py
+!hea_study/latent_space_visuals_expanded/*.png
+!hea_study/latent_space_visuals_expanded/README.md
+
 # ══════════════════════════════════════════════════════════════════════════════
 # element_switching/  —  scripts + model/params.txt only
 # ══════════════════════════════════════════════════════════════════════════════
@@ -80,6 +86,7 @@ element_switching/**
 !element_switching/graphite/
 !element_switching/liquid/
 !element_switching/model/
+!element_switching/cn_switching_image/
 
 element_switching/graphite/**
 !element_switching/graphite/*.py
@@ -95,6 +102,11 @@ element_switching/model/**
 !element_switching/model/params.txt
 
 element_switching/data/
+
+element_switching/cn_switching_image/**
+!element_switching/cn_switching_image/*.py
+!element_switching/cn_switching_image/*.png
+!element_switching/cn_switching_image/README.md
 
 # ── Simulation / fingerprint artifacts (global) ───────────────────────────────
 **/frame_*/
@@ -138,6 +150,8 @@ hea_study/chimes_model/model.*
 *.log
 run_*.log
 *.png
+!hea_study/latent_space_visuals_expanded/*.png
+!element_switching/cn_switching_image/*.png
 *-fingerprints_combined.csv
 
 # Backup files from reorganization
