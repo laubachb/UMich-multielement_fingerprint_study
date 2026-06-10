@@ -56,3 +56,7 @@ for run_dir in "${RUNS_DIR}"/*/; do
 done
 
 echo "Submitted ${submitted} statepoint job(s) for model=full."
+
+if [[ -n "${RESEARCH_NOTES_ROOT:-}" ]]; then
+    python3 "${SCRIPT_DIR}/../../scripts/sync_proj_c_log.py" scan || true
+fi

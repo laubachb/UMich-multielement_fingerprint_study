@@ -54,8 +54,13 @@ for run_dir in "${RUNS_DIR}"/a*_pct*_rep*/; do
         continue
     fi
 
+    if [[ -f "${run_dir}/params.txt" ]] && grep -q ENDFILE "${run_dir}/params.txt" 2>/dev/null; then
+        echo "Skipping ${name} (params.txt complete)"
+        continue
+    fi
+
     if [[ -f "${run_dir}/submitted.json" ]]; then
-        echo "Skipping ${name} (already submitted)"
+        echo "Skipping ${name} (already submitted; delete submitted.json to retry)"
         continue
     fi
 

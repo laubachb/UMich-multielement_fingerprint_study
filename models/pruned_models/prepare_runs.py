@@ -50,6 +50,17 @@ def parse_args() -> argparse.Namespace:
         help="Output root for per-subset run directories.",
     )
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--replicate",
+        type=int,
+        default=None,
+        help="Only prepare runs for this replicate index (e.g. 0).",
+    )
+    parser.add_argument(
+        "--debug-queue",
+        action="store_true",
+        help="Use skx-dev partition for all runs (longer walltimes for larger subsets).",
+    )
     return parser.parse_args()
 
 
@@ -89,7 +100,22 @@ def write_subset_xyzf(
             handle.writelines(atoms)
 
 
-def resources_for_n_frames(n_frames: int) -> dict[str, str | int]:
+def resources_for_n_frames(n_frames: int, *, debug_queue: bool = False) -> dict[str, str | int]:
+    if debug_queue:
+        if n_frames <= 10:
+            gen_wall, solve_wall = "01:00:00", "02:00:00"
+        elif n_frames <= 50:
+            gen_wall, solve_wall = "02:00:00", "02:00:00"
+        else:
+            gen_wall, solve_wall = "02:00:00", "02:00:00"
+        return {
+            "partition": "skx-dev",
+            "nnodes": 1,
+            "ncores": 48,
+            "ntasks": 48,
+            "gen_walltime": gen_wall,
+            "solve_walltime": solve_wall,
+        }
     if n_frames <= 10:
         return {
             "partition": "skx-dev",
@@ -162,11 +188,12 @@ def prepare_run(
     all_frames: list,
     runs_dir: Path,
     dry_run: bool,
+    debug_queue: bool = False,
 ) -> Path:
     out_dir = runs_dir / run["name"]
     frame_indices = [frame_to_index(frame) for frame in run["selected_frames"]]
     n_frames = len(frame_indices)
-    resources = resources_for_n_frames(n_frames)
+    resources = resources_for_n_frames(n_frames, debug_queue=debug_queue)
     trjfile = "training.xyzf"
 
     if dry_run:
@@ -186,6 +213,7 @@ def prepare_run(
     job_prefix = run["name"]
     mapping = {
         "JOB_PREFIX": job_prefix,
+        "MULTIELEMENT_ROOT": str(MULTIELEMENT_ROOT),
         "PARTITION": resources["partition"],
         "NNODES": resources["nnodes"],
         "NCORES": resources["ncores"],
@@ -235,7 +263,17 @@ def main() -> None:
     if not runs:
         raise RuntimeError(f"No sampling runs found under {args.sampling_results}")
 
-    print(f"Preparing {len(runs)} pruned-model runs from {args.sampling_results}")
+    if args.replicate is not None:
+        runs = [r for r in runs if r["replicate"] == args.replicate]
+    if not runs:
+        raise RuntimeError("No runs matched the requested filters.")
+
+    label = f"{len(runs)} pruned-model runs"
+    if args.replicate is not None:
+        label += f" (replicate {args.replicate:02d})"
+    if args.debug_queue:
+        label += " [skx-dev]"
+    print(f"Preparing {label} from {args.sampling_results}")
     all_frames = None if args.dry_run else load_all_frames(args.source_xyzf)
     if all_frames is not None:
         print(f"Loaded {len(all_frames)} frames from {args.source_xyzf}")
@@ -247,6 +285,7 @@ def main() -> None:
             all_frames=all_frames,
             runs_dir=args.runs_dir,
             dry_run=args.dry_run,
+            debug_queue=args.debug_queue,
         )
         prepared.append(out_dir)
 

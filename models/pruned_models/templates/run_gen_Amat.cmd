@@ -8,10 +8,10 @@
 #SBATCH -o stdoutmsg_gen_%j
 #SBATCH -e erroutmsg_gen_%j
 
-set -euo pipefail
+set -uo pipefail
 cd "${SLURM_SUBMIT_DIR}"
 
-export MULTIELEMENT_ROOT="${MULTIELEMENT_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)}"
+export MULTIELEMENT_ROOT="{{MULTIELEMENT_ROOT}}"
 source "${MULTIELEMENT_ROOT}/setup/env.sh"
 module load intel/24.0 impi/21.11 python
 
@@ -21,4 +21,8 @@ else
     LSQ_EXE="${MULTIELEMENT_ROOT}/chimes_lsq-LLfork/build/chimes_lsq"
 fi
 
-ibrun -n {{NTASKS}} "${LSQ_EXE}" fm_setup.in | tee fm_setup.log
+_exit=0
+ibrun -n {{NTASKS}} "${LSQ_EXE}" fm_setup.in | tee fm_setup.log || _exit=$?
+
+"${MULTIELEMENT_ROOT}/scripts/log_compute_event.sh" chimes_gen "${SLURM_SUBMIT_DIR}" "${_exit}" || true
+exit "${_exit}"

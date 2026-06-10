@@ -5,6 +5,10 @@ chimes_calculator-LLfork/
 chimes_lsq-LLfork/
 chimes_lsq/
 
+# Local research-notes clone (use RESEARCH_NOTES_ROOT; not part of this repo)
+UMich-research_notes/
+.proj_c_compute_log_state.json
+
 # ── Archives & loose data at repo root ────────────────────────────────────────
 *.tar.gz
 *.zip

@@ -11,7 +11,15 @@ cd models/pruned_models
 # 1. Create run dirs (subset xyzf + fm_setup.in + SLURM scripts)
 python prepare_runs.py
 
-# 2. Submit gen_Amat → solve_Amat job chains (re-run until all 45 are queued)
+# 2. Debug queue: 1% × rep00 for all five α (recommended first)
+bash submit_debug_pct001.sh
+bash submit_debug_pct001.sh --batch-size 2   # if QOS submit limit hit
+
+# 2b. Debug queue: all retentions × rep00 — 15 runs on skx-dev
+bash submit_debug_all.sh
+bash submit_debug_all.sh --batch-size 3   # if QOS submit limit hit
+
+# 3. (Optional) Full production batch: all 3 replicates × 45 runs
 bash submit_all.sh --batch-size 5
 ```
 
@@ -32,7 +40,7 @@ runs/a000_pct001_rep00/
 |---------|-------|
 | Source trajectory | `models/full_model/full_dft.xyzf` |
 | FPS inputs | `models/sampling/results/` |
-| Retention levels | 1%, 10%, 50% × 5 α × 3 replicates = **45 runs** |
+| Retention levels | 1%, 10%, 50% × 5 α × 3 replicates = **45 runs** (debug: **15** rep00 only) |
 | Solver | `chimes_lsq` + `chimes_lsq.py --algorithm dlasso` |
 
 Walltime / partition scale with subset size (skx-dev for ≤10 frames, skx for larger).
