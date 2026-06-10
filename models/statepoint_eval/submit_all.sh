@@ -3,24 +3,26 @@
 #
 #   cd models/statepoint_eval
 #   python prepare_runs.py --sync-params
-#   bash submit_all.sh --batch-size 5
+#   bash submit_all.sh --batch-size 10
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RUNS_DIR="${SCRIPT_DIR}/runs"
 BATCH_SIZE=9999
+PARTITION="skx"
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --batch-size) BATCH_SIZE="$2"; shift ;;
+        --partition) PARTITION="$2"; shift ;;
         *) echo "Unknown option: $1" >&2; exit 1 ;;
     esac
     shift
 done
 
-echo "Refreshing all run directories..."
-python3 "${SCRIPT_DIR}/prepare_runs.py" --sync-params
+echo "Refreshing all run directories (partition=${PARTITION})..."
+python3 "${SCRIPT_DIR}/prepare_runs.py" --sync-params --partition "${PARTITION}"
 
 submitted=0
 for model_dir in "${RUNS_DIR}"/*/; do

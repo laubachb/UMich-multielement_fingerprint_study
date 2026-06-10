@@ -29,7 +29,7 @@ cd models/statepoint_eval
 # Refresh params + build run dirs for the 100% model
 python prepare_runs.py --sync-params --models full
 
-# Submit all 10 statepoints on skx-dev
+# Submit all 10 statepoints on skx (production queue)
 bash submit_full_model.sh
 ```
 
@@ -50,7 +50,7 @@ Each `runs/{model}/{statepoint}/` directory contains:
 - `data.in` — LAMMPS data from `starting_frame.xyzf`
 - `params.txt` — ChIMES parameters for that model
 - `in.lammps` — NVT equilibration (10 ps) + NVT production (10 ps) with `compute rdf`
-- `run_lammps.cmd` — SLURM launcher (48 MPI ranks, skx-dev by default)
+- `run_lammps.cmd` — SLURM launcher (48 MPI ranks, `skx` partition by default)
 
 **Outputs** (gitignored): `rdf.dat`, `traj.lammpstrj`, `log.lammps`, `output.txt`.
 

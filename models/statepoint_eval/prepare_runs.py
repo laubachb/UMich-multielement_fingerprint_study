@@ -88,8 +88,8 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--partition",
-        default="skx-dev",
-        help="SLURM partition for run_lammps.cmd.",
+        default="skx",
+        help="SLURM partition for run_lammps.cmd (default: skx production queue).",
     )
     parser.add_argument(
         "--walltime",

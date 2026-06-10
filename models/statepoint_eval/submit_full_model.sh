@@ -4,24 +4,26 @@
 #   cd models/statepoint_eval
 #   python prepare_runs.py --sync-params --models full
 #   bash submit_full_model.sh
-#   bash submit_full_model.sh --batch-size 3
+#   bash submit_full_model.sh --batch-size 10
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RUNS_DIR="${SCRIPT_DIR}/runs/full"
 BATCH_SIZE=9999
+PARTITION="skx"
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --batch-size) BATCH_SIZE="$2"; shift ;;
+        --partition) PARTITION="$2"; shift ;;
         *) echo "Unknown option: $1" >&2; exit 1 ;;
     esac
     shift
 done
 
-echo "Refreshing run directories for model=full..."
-python3 "${SCRIPT_DIR}/prepare_runs.py" --sync-params --models full
+echo "Refreshing run directories for model=full (partition=${PARTITION})..."
+python3 "${SCRIPT_DIR}/prepare_runs.py" --sync-params --models full --partition "${PARTITION}"
 
 if [[ ! -d "${RUNS_DIR}" ]]; then
     echo "No runs found under ${RUNS_DIR}" >&2
