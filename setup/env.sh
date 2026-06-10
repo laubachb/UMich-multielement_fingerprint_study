@@ -24,3 +24,5 @@ export HEA_CHIMES_PARAMS="$MULTIELEMENT_ROOT/hea_study/chimes_model/params.txt"
 # UMich-research_notes clone (NOT in this git repo). Used by Proj_C compute logging.
 # Override in ~/.bashrc if your clone lives elsewhere.
 export RESEARCH_NOTES_ROOT="${RESEARCH_NOTES_ROOT:-/work2/09982/blaubach/stampede3/multielement_study/UMich-research_notes}"
+# Auto-commit/push Proj_C logs in research notes after sync (not multielement_study).
+export RESEARCH_NOTES_AUTO_PUSH="${RESEARCH_NOTES_AUTO_PUSH:-1}"

@@ -14,6 +14,10 @@ Usage
 
   # Single job event (called from SLURM epilogue via log_compute_event.sh)
   python scripts/sync_proj_c_log.py event --type chimes_solve --run-dir ... --exit-code 0
+
+After updating logs, auto-commits and pushes only files under
+`02_projects/Proj_C-multielement/logs/` in the research-notes repo.
+Set RESEARCH_NOTES_AUTO_PUSH=0 to disable.
 """
 
 from __future__ import annotations
@@ -22,6 +26,7 @@ import argparse
 import json
 import os
 import re
+import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -448,6 +453,96 @@ def count_cn_fingerprints() -> dict[str, int]:
     }
 
 
+def auto_push_enabled() -> bool:
+    return os.environ.get("RESEARCH_NOTES_AUTO_PUSH", "1").lower() not in (
+        "0",
+        "false",
+        "no",
+        "off",
+    )
+
+
+def maybe_push_research_notes(root: Path, log_paths: list[Path]) -> None:
+    """Commit and push Proj_C log files in the research-notes repo only."""
+    if not auto_push_enabled():
+        return
+    if not (root / ".git").is_dir():
+        print(
+            f"Warning: RESEARCH_NOTES_ROOT is not a git repo; skip push: {root}",
+            file=sys.stderr,
+        )
+        return
+
+    rel_paths = sorted(
+        {str(path.relative_to(root)) for path in log_paths if path.is_file()}
+    )
+    if not rel_paths:
+        return
+
+    status = subprocess.run(
+        ["git", "-C", str(root), "status", "--porcelain", "--", *rel_paths],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if status.returncode != 0:
+        print(
+            f"Warning: could not check research notes git status: {status.stderr.strip()}",
+            file=sys.stderr,
+        )
+        return
+    if not status.stdout.strip():
+        return
+
+    add = subprocess.run(
+        ["git", "-C", str(root), "add", "--", *rel_paths],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if add.returncode != 0:
+        print(
+            f"Warning: research notes git add failed: {add.stderr.strip()}",
+            file=sys.stderr,
+        )
+        return
+
+    commit = subprocess.run(
+        [
+            "git",
+            "-C",
+            str(root),
+            "commit",
+            "-m",
+            f"auto: Proj_C compute log sync ({utc_now()})",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if commit.returncode != 0:
+        print(
+            f"Warning: research notes commit failed: {commit.stderr.strip()}",
+            file=sys.stderr,
+        )
+        return
+
+    push = subprocess.run(
+        ["git", "-C", str(root), "push", "origin", "HEAD"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if push.returncode == 0:
+        print(f"Pushed research notes ({', '.join(rel_paths)})")
+    else:
+        print(
+            "Warning: research notes push failed "
+            f"(changes committed locally; retry on next sync): {push.stderr.strip()}",
+            file=sys.stderr,
+        )
+
+
 def build_summary() -> list[str]:
     pruned = count_pruned_models()
     statepoint = count_statepoint_md()
@@ -487,6 +582,7 @@ def cmd_scan(args: argparse.Namespace) -> int:
     print(f"  {daily_log} (auto-sync block)")
     for line in summary:
         print(f"  - {line}")
+    maybe_push_research_notes(root, [compute_log, daily_log])
     return 0
 
 
@@ -533,6 +629,7 @@ def cmd_event(args: argparse.Namespace) -> int:
     )
     save_state(state)
     update_daily_log_summary(daily_log, build_summary())
+    maybe_push_research_notes(root, [compute_log, daily_log])
     return 0
 
 
