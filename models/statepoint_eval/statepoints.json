@@ -1,0 +1,95 @@
+{
+  "description": "CN evaluation statepoints (starting frames from models/pruned_simulations/).",
+  "statepoints": [
+    {
+      "case": 1,
+      "id": "0.20.3percN_2.0gcc",
+      "n_pct": 20.3,
+      "density_gcc": 2.0,
+      "full_dft_frame": 1,
+      "temperature_k": 300,
+      "starting_frame": "statepoints/0.20.3percN_2.0gcc/starting_frame.xyzf"
+    },
+    {
+      "case": 2,
+      "id": "1.20.3percN_2.7gcc",
+      "n_pct": 20.3,
+      "density_gcc": 2.7,
+      "full_dft_frame": 21,
+      "temperature_k": 300,
+      "starting_frame": "statepoints/1.20.3percN_2.7gcc/starting_frame.xyzf"
+    },
+    {
+      "case": 3,
+      "id": "2.20.3percN_3.5gcc",
+      "n_pct": 20.3,
+      "density_gcc": 3.5,
+      "full_dft_frame": 41,
+      "temperature_k": 6000,
+      "starting_frame": "statepoints/2.20.3percN_3.5gcc/starting_frame.xyzf"
+    },
+    {
+      "case": 4,
+      "id": "3.20.3percN_4.0gcc",
+      "n_pct": 20.3,
+      "density_gcc": 4.0,
+      "full_dft_frame": 61,
+      "temperature_k": 9000,
+      "starting_frame": "statepoints/3.20.3percN_4.0gcc/starting_frame.xyzf"
+    },
+    {
+      "case": 5,
+      "id": "4.50percN_1.0gcc",
+      "n_pct": 50.0,
+      "density_gcc": 1.0,
+      "full_dft_frame": 81,
+      "temperature_k": 1500,
+      "starting_frame": "statepoints/4.50percN_1.0gcc/starting_frame.xyzf"
+    },
+    {
+      "case": 6,
+      "id": "5.50percN_2.7gcc",
+      "n_pct": 50.0,
+      "density_gcc": 2.7,
+      "full_dft_frame": 101,
+      "temperature_k": 3000,
+      "starting_frame": "statepoints/5.50percN_2.7gcc/starting_frame.xyzf"
+    },
+    {
+      "case": 7,
+      "id": "6.50percN_3.5gcc",
+      "n_pct": 50.0,
+      "density_gcc": 3.5,
+      "full_dft_frame": 121,
+      "temperature_k": 6000,
+      "starting_frame": "statepoints/6.50percN_3.5gcc/starting_frame.xyzf"
+    },
+    {
+      "case": 8,
+      "id": "7.75percN_1.0gcc",
+      "n_pct": 75.0,
+      "density_gcc": 1.0,
+      "full_dft_frame": 141,
+      "temperature_k": 300,
+      "starting_frame": "statepoints/7.75percN_1.0gcc/starting_frame.xyzf"
+    },
+    {
+      "case": 9,
+      "id": "8.75percN_2.7gcc",
+      "n_pct": 75.0,
+      "density_gcc": 2.7,
+      "full_dft_frame": 161,
+      "temperature_k": 3000,
+      "starting_frame": "statepoints/8.75percN_2.7gcc/starting_frame.xyzf"
+    },
+    {
+      "case": 10,
+      "id": "9.75percN_3.0gcc",
+      "n_pct": 75.0,
+      "density_gcc": 3.0,
+      "full_dft_frame": 181,
+      "temperature_k": 9000,
+      "starting_frame": "statepoints/9.75percN_3.0gcc/starting_frame.xyzf"
+    }
+  ]
+}
