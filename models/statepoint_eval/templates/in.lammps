@@ -41,11 +41,12 @@ dump_modify     1 sort id element C N
 
 run             ${equil_steps}
 
+undump          1
 reset_timestep  0
 unfix           nvt
 fix             nvt all nvt temp ${temp} ${temp} 100.0
 
 compute         rdf all rdf ${rdf_bins} 1 1 1 2 2 2 cutoff ${rdf_rmax}
-fix             rdf_avg all ave/time 100 10 1000 c_rdf[*] file rdf.dat mode vector
+fix             rdf_avg all ave/time {{RDF_NEVERY}} {{RDF_NREPEAT}} {{RDF_PERIODS}} c_rdf[*] file rdf.dat mode vector
 
 run             ${prod_steps}

@@ -88,13 +88,24 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--partition",
-        default="skx",
-        help="SLURM partition for run_lammps.cmd (default: skx production queue).",
+        default=None,
+        help="SLURM partition for run_lammps.cmd (default: skx, or skx-dev with --debug-queue).",
     )
     parser.add_argument(
         "--walltime",
-        default="01:00:00",
+        default=None,
         help="SLURM walltime for run_lammps.cmd.",
+    )
+    parser.add_argument(
+        "--ntasks",
+        type=int,
+        default=None,
+        help="MPI ranks for ibrun (default: 48 production, 4 debug).",
+    )
+    parser.add_argument(
+        "--debug-queue",
+        action="store_true",
+        help="Use skx-dev with shorter MD and fewer MPI ranks for validation.",
     )
     parser.add_argument("--dry-run", action="store_true")
     return parser.parse_args()
@@ -235,6 +246,11 @@ def prepare_run(
     convert_xyzf(xyzf_path, run_dir / "data.in", dry_run=False)
     shutil.copy2(params_src, run_dir / "params.txt")
 
+    if args.debug_queue:
+        rdf_nevery, rdf_nrepeat, rdf_periods = 10, 2, 10
+    else:
+        rdf_nevery, rdf_nrepeat, rdf_periods = 100, 10, 1000
+
     in_lammps = render_template(
         TEMPLATE_DIR / "in.lammps",
         {
@@ -242,12 +258,15 @@ def prepare_run(
             "SEED": str(seed_for_run(model_id, statepoint_id)),
             "EQUIL_STEPS": str(args.equil_steps),
             "PROD_STEPS": str(args.prod_steps),
+            "RDF_NEVERY": str(rdf_nevery),
+            "RDF_NREPEAT": str(rdf_nrepeat),
+            "RDF_PERIODS": str(rdf_periods),
         },
     )
     (run_dir / "in.lammps").write_text(in_lammps, encoding="utf-8")
 
     job_name = f"cn_{model_id}_{statepoint_id}"[:64]
-    ntasks = 48
+    ntasks = args.ntasks
     run_cmd = render_template(
         TEMPLATE_DIR / "run_lammps.cmd",
         {
@@ -280,8 +299,30 @@ def prepare_run(
     return run_dir
 
 
+def apply_run_defaults(args: argparse.Namespace) -> None:
+    if args.debug_queue:
+        if args.partition is None:
+            args.partition = "skx-dev"
+        if args.walltime is None:
+            args.walltime = "01:00:00"
+        if args.ntasks is None:
+            args.ntasks = 48
+        if args.equil_steps == 10_000:
+            args.equil_steps = 100
+        if args.prod_steps == 50_000:
+            args.prod_steps = 200
+    else:
+        if args.partition is None:
+            args.partition = "skx"
+        if args.walltime is None:
+            args.walltime = "01:00:00"
+        if args.ntasks is None:
+            args.ntasks = 48
+
+
 def main() -> int:
     args = parse_args()
+    apply_run_defaults(args)
 
     if args.sync_statepoints:
         n = sync_statepoints(args.dry_run)

@@ -61,6 +61,13 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Use skx-dev partition for all runs (longer walltimes for larger subsets).",
     )
+    parser.add_argument(
+        "--retention-fractions",
+        type=float,
+        nargs="+",
+        default=None,
+        help="Only prepare runs at these retention fractions (e.g. 0.01 0.10 0.20).",
+    )
     return parser.parse_args()
 
 
@@ -132,7 +139,7 @@ def resources_for_n_frames(n_frames: int, *, debug_queue: bool = False) -> dict[
             "ncores": 48,
             "ntasks": 48,
             "gen_walltime": "04:00:00",
-            "solve_walltime": "02:00:00",
+            "solve_walltime": "06:00:00",
         }
     return {
         "partition": "skx",
@@ -265,6 +272,9 @@ def main() -> None:
 
     if args.replicate is not None:
         runs = [r for r in runs if r["replicate"] == args.replicate]
+    if args.retention_fractions is not None:
+        allowed = set(args.retention_fractions)
+        runs = [r for r in runs if r["retention_fraction"] in allowed]
     if not runs:
         raise RuntimeError("No runs matched the requested filters.")
 

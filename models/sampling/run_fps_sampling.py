@@ -3,7 +3,7 @@
 Farthest-point sampling (FPS) on CN fingerprint vectors across ChIMES alpha spaces.
 
 For each alpha value (0, 0.25, 0.50, 0.75, 1.0), selects diverse frame subsets
-at 1%, 10%, and 50% retention using Euclidean distance in histogram space.
+at 1%, 10%, 20%, and 50% retention using Euclidean distance in histogram space.
 Multiple stochastic replicates differ only in the random initial frame.
 
 Output layout
@@ -52,8 +52,8 @@ from make_umap_degeneracy import (  # noqa: E402
     load_fp,
 )
 
-DEFAULT_RETENTIONS = (0.01, 0.10, 0.50)
-DEFAULT_REPLICATES = 3
+DEFAULT_RETENTIONS = (0.01, 0.10, 0.20, 0.50)
+DEFAULT_REPLICATES = 10
 RESULTS_DIR = SCRIPT_DIR / "results"
 
 
