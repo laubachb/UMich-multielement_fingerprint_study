@@ -40,6 +40,12 @@ models/pruned_models/**
 models/pruned_models/templates/**
 !models/pruned_models/templates/*
 models/pruned_models/runs/
+!models/fps_alpha_probe/
+models/fps_alpha_probe/**
+!models/fps_alpha_probe/*.py
+!models/fps_alpha_probe/README.md
+models/fps_alpha_probe/output/
+models/sampling/results_convergence_5pct/
 !models/statepoint_eval/
 models/statepoint_eval/**
 !models/statepoint_eval/*.py
@@ -96,6 +102,17 @@ hea_study/latent_space_visuals_expanded/**
 !hea_study/latent_space_visuals_expanded/*.py
 !hea_study/latent_space_visuals_expanded/*.png
 !hea_study/latent_space_visuals_expanded/README.md
+
+!hea_study/sampling/
+hea_study/sampling/**
+!hea_study/sampling/*.py
+hea_study/sampling/results_convergence_5pct/
+
+!hea_study/fps_alpha_probe/
+hea_study/fps_alpha_probe/**
+!hea_study/fps_alpha_probe/*.py
+!hea_study/fps_alpha_probe/README.md
+hea_study/fps_alpha_probe/output/
 
 # ══════════════════════════════════════════════════════════════════════════════
 # element_switching/  —  scripts + model/params.txt only
