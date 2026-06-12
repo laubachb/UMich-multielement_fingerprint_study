@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Submit gen→solve chains for FPS replicates 01–09 at 1%, 10%, and 20% retention.
+# Submit gen→solve chains for FPS replicates 01–09 at 1% and 10% retention.
+# (20% / 50% paused — use submit_debug_pct020_bundle.sh when ready.)
 #
 # rep00 at each cut is handled separately (debug bundles or already complete).
 # Requires FPS sampling with 10 replicates first.
@@ -30,9 +31,9 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
-echo "Preparing run dirs for 1%/10%/20% × replicates ${MIN_REP}–${MAX_REP} (skx walltimes)..."
+echo "Preparing run dirs for 1%/10% × replicates ${MIN_REP}–${MAX_REP} (skx walltimes)..."
 python3 "${SCRIPT_DIR}/prepare_runs.py" \
-    --retention-fractions 0.01 0.10 0.20
+    --retention-fractions 0.01 0.10
 
 job_active() {
     local jid="$1"
@@ -96,7 +97,7 @@ submitted=0
 skipped_complete=0
 skipped_active=0
 
-for pct in pct001 pct010 pct020; do
+for pct in pct001 pct010; do
     for rep in $(seq "${MIN_REP}" "${MAX_REP}"); do
         rep_tag="$(printf 'rep%02d' "${rep}")"
         for run_dir in "${RUNS_DIR}"/a*_"${pct}"_"${rep_tag}"/; do
